@@ -1,0 +1,201 @@
+id,name,length,width,height,weight,fragile
+1,Smartphone Box,18,10,5,0.25,True
+2,Headphones Box,20,15,10,0.18,True
+3,Laptop Box,45,30,8,2.40,True
+4,Shoe Box,35,25,15,1.10,False
+5,Book Package,25,20,10,0.80,False
+6,Perfume Box,15,10,10,0.15,True
+7,Mouse Box,12,8,5,0.12,True
+8,Keyboard Box,50,20,5,0.90,False
+9,Camera Box,25,20,15,0.70,True
+10,Router Box,25,15,10,0.60,False
+11,Tablet Box,30,20,5,0.55,True
+12,Smartwatch Box,12,8,5,0.08,True
+13,VR Headset Box,40,30,20,3.20,True
+14,Drone Box,50,40,20,4.50,True
+15,Gaming Console Box,45,35,15,3.80,True
+16,Game Controller Box,20,15,10,0.35,False
+17,External HDD Box,15,10,5,0.20,True
+18,SSD Box,12,8,3,0.05,True
+19,RAM Kit Box,15,10,5,0.10,True
+20,Graphics Card Box,35,20,10,1.20,True
+21,Motherboard Box,40,30,10,1.50,True
+22,Printer Box,55,45,35,12.0,False
+23,Scanner Box,50,40,30,9.5,False
+24,Monitor Box,70,20,50,8.0,True
+25,TV 32 inch Box,80,15,50,10.0,True
+26,TV 55 inch Box,130,20,80,18.0,True
+27,TV 65 inch Box,150,25,90,24.0,True
+28,Soundbar Box,100,15,15,5.0,True
+29,Subwoofer Box,60,60,60,18.0,False
+30,Speakers Box,60,40,35,6.5,False
+31,Microwave Box,60,45,40,15.0,False
+32,Toaster Box,35,25,20,2.5,False
+33,Blender Box,30,25,35,3.2,False
+34,Electric Kettle Box,30,20,25,1.8,False
+35,Fan Box,50,50,20,4.0,False
+36,Air Conditioner Box,90,60,60,28.0,False
+37,Heater Box,60,40,40,7.5,False
+38,Vacuum Cleaner Box,80,40,40,10.0,False
+39,Iron Box,30,15,15,1.2,False
+40,Vacuum Bags Pack,25,20,15,0.40,False
+41,Shoe Box Premium,38,28,16,1.30,False
+42,Sneakers Box,35,25,15,0.90,False
+43,Boots Box,40,30,20,1.80,False
+44,Clothes Pack Small,30,20,10,0.60,False
+45,Clothes Pack Large,60,40,30,3.50,False
+46,Jacket Box,50,40,20,2.10,False
+47,T-Shirt Pack,30,25,10,0.50,False
+48,Jeans Box,40,30,20,1.20,False
+49,Hat Box,25,25,20,0.40,False
+50,Belt Box,20,10,5,0.10,False
+51,Perfume Gift Box,15,10,10,0.12,True
+52,Makeup Kit Box,25,20,10,0.35,True
+53,Jewelry Box,20,15,10,0.20,True
+54,Watch Box Luxury,18,12,10,0.25,True
+55,Mirror Box Small,40,30,5,1.50,True
+56,Picture Frame Box,50,40,10,2.00,True
+57,Glassware Box,40,30,25,4.50,True
+58,Plate Set Box,40,30,25,3.80,True
+59,Cup Set Box,30,20,20,2.50,True
+60,Cutlery Box,25,20,10,1.10,False
+61,Rice Sack Small,40,30,20,10.0,False
+62,Rice Sack Large,60,40,20,25.0,False
+63,Flour Sack,60,40,20,20.0,False
+64,Sugar Sack,60,40,20,18.0,False
+65,Coffee Beans Box,30,20,20,5.5,False
+66,Tea Box,25,20,15,2.0,False
+67,Canned Food Box,40,30,25,6.0,False
+68,Juice Carton Pack,45,35,30,8.0,False
+69,Water Bottle Pack,40,30,30,7.5,False
+70,Pet Food Bag,60,40,30,12.0,False
+71,Dog Toy Box,30,25,20,1.5,False
+72,Cat Litter Box,50,40,20,9.0,False
+73,Pet Cage Box,80,60,50,20.0,False
+74,Bicycle Box,120,20,70,18.0,False
+75,Helmet Box,30,25,25,0.8,False
+76,Electric Scooter Box,120,40,50,22.0,False
+77,Hoverboard Box,60,30,30,6.0,False
+78,Skateboard Box,80,20,20,3.0,False
+79,Roller Skates Box,40,30,20,1.2,False
+80,Fishing Rod Box,120,20,20,2.5,False
+81,Camping Tent Box,70,30,30,5.0,False
+82,Sleeping Bag Pack,60,30,30,2.0,False
+83,Camping Stove Box,40,30,20,3.0,False
+84,Cooler Box,60,40,40,6.5,False
+85,Camping Gear Box,80,50,40,10.0,False
+86,Dumbbell Set Box,60,40,30,25.0,False
+87,Exercise Bike Box,120,60,50,35.0,False
+88,Treadmill Box,150,70,40,45.0,False
+89,Yoga Mat Pack,60,20,20,1.5,False
+90,Resistance Bands Box,30,20,10,0.5,False
+91,Car Battery Box,40,30,25,18.0,False
+92,Motor Oil Pack,50,40,30,10.0,False
+93,Car Tire Box,70,70,25,12.0,False
+94,Car Parts Box Small,30,25,20,3.5,False
+95,Car Parts Box Large,80,60,40,18.0,False
+96,Paint Bucket Pack,40,40,40,15.0,False
+97,Construction Tools Box,60,50,40,22.0,False
+98,Cement Bag,60,40,20,25.0,False
+99,Brick Pack,60,40,30,30.0,False
+100,Wood Plank Pack,120,40,20,18.0,False
+101,Office Chair Box,70,60,50,15.0,False
+102,Desk Lamp Box,40,25,20,1.2,True
+103,Books Bundle Large,50,40,30,8.0,False
+104,Books Bundle Small,30,25,15,3.0,False
+105,Office Paper Box,50,40,30,12.0,False
+106,Envelope Pack,40,30,20,2.0,False
+107,File Organizer Box,60,40,30,5.0,False
+108,Office Desk Box,120,80,20,28.0,False
+109,Bookshelf Box,100,60,30,20.0,False
+110,Drawer Unit Box,80,60,40,18.0,False
+111,Plastic Storage Box,60,40,40,6.0,False
+112,Laundry Basket Box,50,40,40,3.0,False
+113,Vacuum Robot Box,40,40,20,2.5,True
+114,Air Purifier Box,60,40,40,7.0,False
+115,Dehumidifier Box,60,40,40,9.0,False
+116,Smart Door Lock Box,25,15,10,0.4,True
+117,Security Camera Box,20,15,10,0.3,True
+118,Router Advanced Box,30,20,10,0.7,False
+119,Network Switch Box,40,30,10,1.5,False
+120,Server Unit Box,80,60,20,20.0,False
+121,Gaming PC Tower Box,70,50,60,18.0,True
+122,Workstation PC Box,80,60,60,25.0,True
+123,Industrial Pump Box,120,80,80,55.0,False
+124,Generator Box,120,80,80,60.0,False
+125,Compressor Box,100,80,80,50.0,False
+126,Welding Machine Box,80,60,60,35.0,False
+127,Heavy Tools Box,80,60,60,40.0,False
+128,Metal Parts Box,60,50,40,18.0,False
+129,Plastic Parts Box,60,50,40,10.0,False
+130,Glass Panels Box,120,80,10,20.0,True
+131,Ceramic Tiles Box,60,60,30,28.0,False
+132,Marble Slab Box,150,80,20,45.0,False
+133,Granite Block Box,120,80,60,70.0,False
+134,Antique Item Box,80,60,40,12.0,True
+135,Jewelry Safe Box,60,50,50,25.0,True
+136,Safe Box Large,100,80,80,65.0,False
+137,Document Safe Box,60,50,40,20.0,False
+138,Cash Register Box,60,40,30,8.0,False
+139,POS Machine Box,40,30,20,2.0,True
+140,Barcode Scanner Box,20,15,10,0.6,True
+141,Label Printer Box,40,30,20,3.0,False
+142,Warehouse Shelf Box,150,80,40,30.0,False
+143,Pallet Jack Box,120,80,40,25.0,False
+144,Forklift Parts Box,100,80,60,40.0,False
+145,Shipping Crate Small,80,60,60,12.0,False
+146,Shipping Crate Medium,120,80,80,25.0,False
+147,Shipping Crate Large,180,100,100,60.0,False
+148,Industrial Machine Box,200,100,100,80.0,False
+149,Medical Equipment Box,60,50,40,18.0,True
+150,X-ray Machine Box,120,80,60,50.0,True
+151,Baby Stroller Box,90,50,40,8.0,False
+152,Baby Crib Box,120,80,30,15.0,False
+153,Wheelchair Box,100,70,50,20.0,False
+154,Toy Car Box,60,40,30,4.0,False
+155,Board Game Box,40,30,10,1.5,False
+156,Puzzle Box,30,25,10,0.8,False
+157,LEGO Set Box,50,40,20,2.0,False
+158,Action Figure Box,30,20,15,0.7,False
+159,Board Game Deluxe,60,40,20,3.5,False
+160,Drone Spare Parts Box,40,30,20,1.0,True
+161,Camera Lens Box,25,20,15,0.6,True
+162,Film Equipment Box,80,50,40,10.0,True
+163,Studio Light Box,70,50,40,8.0,False
+164,Tripod Box,80,20,20,2.5,False
+165,Microphone Kit Box,40,30,20,1.2,True
+166,Stage Equipment Box,120,80,50,35.0,False
+167,Musical Keyboard Box,140,40,20,12.0,False
+168,Guitar Box,120,40,15,4.0,True
+169,Violin Case Box,80,30,15,1.5,True
+170,Piano Keyboard Box,140,40,20,10.0,False
+171,Industrial Sensor Box,30,20,10,0.8,True
+172,Control Panel Box,60,40,20,6.0,False
+173,Automation Unit Box,80,60,40,15.0,False
+174,Robot Arm Box,120,80,60,40.0,False
+175,AI Server Box,120,80,80,50.0,False
+176,Cloud Storage Box,100,80,60,30.0,False
+177,Data Rack Box,120,80,80,45.0,False
+178,Network Cabinet Box,120,80,80,40.0,False
+179,Security System Box,60,40,30,5.0,True
+180,Fire Alarm Box,40,30,20,2.0,True
+181,Emergency Kit Box,25,20,10,1.0,True
+182,First Aid Kit Box,25,20,10,0.9,True
+183,Medical Scanner Box,60,40,40,12.0,True
+184,Hospital Bed Box,200,90,50,60.0,False
+185,Ambulance Equipment Box,120,80,60,35.0,False
+186,Electric Scooter Box,120,40,50,18.0,False
+187,Hoverboard Pro Box,60,30,30,5.0,False
+188,Smart Helmet Box,40,35,30,2.0,True
+189,Drone Delivery Box,50,40,20,3.0,True
+190,Package Drone Box,45,35,15,2.5,True
+191,Smart Glasses Box,15,10,5,0.2,True
+192,AR Headset Box,40,30,20,1.5,True
+193,VR Pro Headset Box,45,35,25,2.0,True
+194,AI Camera Box,25,20,15,0.8,True
+195,Smart Speaker Box,20,15,15,0.6,False
+196,Home Assistant Box,30,20,10,1.0,False
+197,Robot Vacuum Box,40,40,20,3.0,True
+198,Smart Thermostat Box,20,15,10,0.4,True
+199,Smart Light Box,15,10,5,0.1,True
+200,Fully Loaded Gaming PC Box,70,50,60,20.0,True
