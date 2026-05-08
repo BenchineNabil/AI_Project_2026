@@ -206,7 +206,7 @@ def greedy(container: Container, boxes: list[Box]) -> dict:
 
 def generate_boxes(n=100) -> list[Box]:
     boxes = []
-    boxes = load_boxes_from_csv('/data/data.csv', n)
+    boxes = load_boxes_from_csv('../data/data.csv', n)
     # for _ in range(n):
     #     l = random.randint(10, 150)
     #     w = random.randint(10, 150)
