@@ -22,7 +22,7 @@ def load_boxes_from_csv(filepath, n=100, seed=None):
             l       = int(row['length']),
             w       = int(row['width']),
             h       = int(row['height']),
-            weight  = int(row['weight']),
+            weight  = float(row['weight']),
             fragile = (row['fragile'].strip().lower() == 'true')
         )
         boxes.append(b)
