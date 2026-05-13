@@ -1,5 +1,6 @@
 import random
 import csv
+import os
 
 
 def load_boxes_from_csv(filepath, n=100, seed=None):
@@ -206,7 +207,8 @@ def greedy(container: Container, boxes: list[Box]) -> dict:
 
 def generate_boxes(n=100) -> list[Box]:
     boxes = []
-    boxes = load_boxes_from_csv('../data/data.csv', n)
+    data_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'data', 'data.csv'))
+    boxes = load_boxes_from_csv(data_path, n)
     # for _ in range(n):
     #     l = random.randint(10, 150)
     #     w = random.randint(10, 150)
