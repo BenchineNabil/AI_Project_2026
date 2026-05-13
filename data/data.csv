@@ -199,3 +199,103 @@ id,name,length,width,height,weight,fragile
 198,Smart Thermostat Box,20,15,10,0.4,True
 199,Smart Light Box,15,10,5,0.1,True
 200,Fully Loaded Gaming PC Box,70,50,60,20.0,True
+201,Large Storage Box,80,60,50,12.5,False
+202,Industrial Equipment Box,120,80,70,35.0,True
+203,Furniture Package Box,150,100,90,45.0,False
+204,Server Rack Box,100,70,120,40.0,True
+205,Home Theater Box,90,60,55,18.0,True
+206,Outdoor Equipment Box,110,75,65,22.0,False
+207,Heavy Tools Box,95,70,60,28.0,False
+208,Appliance Box,130,90,85,38.0,True
+209,Large Monitor Box,85,55,40,14.0,True
+210,Commercial Printer Box,140,100,80,50.0,True
+211,Storage Crate Box,160,120,100,60.0,False
+212,Workshop Kit Box,90,80,70,25.0,False
+213,Electrical Cabinet Box,110,90,140,55.0,True
+214,Industrial Motor Box,100,100,90,70.0,False
+215,Generator Box,130,95,85,65.0,False
+216,Large TV Box,120,80,60,30.0,True
+217,Warehouse Supply Box,150,110,90,48.0,False
+218,Office Furniture Box,140,100,75,42.0,False
+219,Gaming Setup Box,100,80,60,20.0,True
+220,Mechanical Parts Box,90,90,80,35.0,False
+221,Heavy Duty Crate,180,140,120,80.0,False
+222,Transport Cargo Box,200,150,130,95.0,False
+223,Construction Tools Box,130,110,100,55.0,False
+224,Server Cluster Box,120,90,100,45.0,True
+225,Large Appliance Box,150,120,110,70.0,True
+226,Industrial Fan Box,100,80,120,38.0,False
+227,Air Conditioning Unit Box,140,100,130,60.0,True
+228,Pump Equipment Box,130,95,90,48.0,False
+229,Heavy Electronics Box,110,85,75,33.0,True
+230,Large Storage Cabinet Box,160,120,140,75.0,False
+231,Transport Bin Box,180,150,120,85.0,False
+232,Mass Storage Box,200,160,140,95.0,False
+233,Heavy Machinery Box,220,180,160,120.0,False
+234,Industrial Compressor Box,140,120,130,68.0,False
+235,Cooling System Box,150,130,140,72.0,True
+236,Large Rack Equipment Box,130,100,160,65.0,True
+237,Warehouse Machine Box,180,140,150,90.0,False
+238,Production Equipment Box,200,160,170,110.0,False
+239,Heavy Generator Box,170,140,130,95.0,False
+240,Industrial Storage Box,160,150,140,88.0,False
+241,Logistics Container Box,210,170,150,115.0,False
+242,Bulk Equipment Box,200,180,160,120.0,False
+243,Heavy Industrial Box,220,200,180,140.0,False
+244,Large Cargo Box,240,200,180,150.0,False
+245,Shipping Container Box,250,210,200,160.0,False
+246,Oversized Storage Box,230,190,170,135.0,False
+247,Massive Equipment Box,260,220,200,180.0,False
+248,Transport Crate XL,270,230,210,190.0,False
+249,Industrial Crate XXL,280,240,220,200.0,False
+250,Warehouse Mega Box,300,250,230,220.0,False
+251,Large Machine Case,180,150,160,100.0,False
+252,Production Line Box,200,180,170,120.0,False
+253,Heavy Rack Box,150,120,200,90.0,True
+254,Electrical System Box,140,110,180,75.0,True
+255,Data Center Box,160,130,210,95.0,True
+256,Industrial Unit Box,180,160,190,105.0,False
+257,Factory Equipment Box,200,170,200,130.0,False
+258,Large Workshop Box,170,150,180,110.0,False
+259,Heavy Storage Unit Box,210,180,200,140.0,False
+260,Equipment Housing Box,190,160,170,115.0,False
+261,Mass Storage Container,300,250,200,200.0,False
+262,Industrial Mega Container,320,260,220,220.0,False
+263,Large Cargo Container,340,280,240,250.0,False
+264,Heavy Transport Unit,360,300,260,280.0,False
+265,Oversized Industrial Box,380,320,280,300.0,False
+266,Massive Cargo Unit,400,350,300,350.0,False
+267,Super Storage Box,420,370,320,380.0,False
+268,Extreme Duty Container,450,400,350,420.0,False
+269,Heavy Logistics Box,480,420,370,450.0,False
+270,Ultra Cargo Box,500,450,400,500.0,False
+271,Large Assembly Box,150,130,140,70.0,False
+272,Heavy Equipment Housing,180,150,160,95.0,False
+273,Industrial Storage Case,200,170,180,110.0,False
+274,Large Tools Crate,160,140,150,80.0,False
+275,Workshop Equipment Box,170,150,160,85.0,False
+276,Machine Parts Box,190,160,170,100.0,False
+277,Heavy Assembly Unit Box,210,180,190,120.0,False
+278,Bulk Storage Crate,220,190,200,135.0,False
+279,Large Industrial Case,230,200,210,150.0,False
+280,Mass Equipment Box,240,210,220,165.0,False
+281,Heavy Transport Crate,260,230,240,180.0,False
+282,Large Production Box,280,250,260,200.0,False
+283,Industrial Mega Case,300,270,280,220.0,False
+284,Ultra Storage Container,320,290,300,250.0,False
+285,Massive Industrial Unit,340,310,320,280.0,False
+286,Extreme Cargo Case,360,330,340,300.0,False
+287,Heavy Duty Mega Box,380,350,360,330.0,False
+288,Industrial XXL Crate,400,370,380,360.0,False
+289,Warehouse Super Box,420,390,400,390.0,False
+290,Ultra Logistics Container,450,420,420,420.0,False
+291,High Volume Storage Box,200,180,220,130.0,False
+292,Large Equipment Housing,220,200,240,150.0,False
+293,Industrial Heavy Case,240,220,260,170.0,False
+294,Bulk Machine Box,260,240,280,190.0,False
+295,Mass Storage Unit,280,260,300,210.0,False
+296,Large Cargo Housing,300,280,320,230.0,False
+297,Heavy Storage Crate,320,300,340,250.0,False
+298,Industrial Load Box,340,320,360,270.0,False
+299,Extreme Storage Unit,360,340,380,290.0,False
+300,Ultra Heavy Container,380,360,400,320.0,False
