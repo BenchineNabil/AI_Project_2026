@@ -44,19 +44,53 @@ def _dims_as_meters(length: float, width: float, height: float, container_m: dic
     return l, w, h
 
 
+def _copy_notebook_box(box: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": str(box["id"]),
+        "web_id": str(box.get("web_id") or box["id"]),
+        "name": box.get("name") or f"Box {box['id']}",
+        "l": int(box["l"]),
+        "w": int(box["w"]),
+        "h": int(box["h"]),
+        "weight": float(box.get("weight") or 0),
+        "fragile": bool(box.get("fragile", False)),
+    }
+
+
+def _ensure_unique_notebook_ids(boxes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """GA order crossover requires unique box ids; empty/duplicate ids break chromosomes."""
+    used: set[str] = set()
+    out: list[dict[str, Any]] = []
+    for i, raw in enumerate(boxes):
+        box = _copy_notebook_box(raw)
+        web_id = str(raw.get("web_id") or raw.get("id") or f"box-{i}")
+        box["web_id"] = web_id
+        notebook_id = str(raw.get("id") or web_id).strip() or f"box-{i}"
+        base = notebook_id
+        suffix = 0
+        while notebook_id in used:
+            suffix += 1
+            notebook_id = f"{base}#{suffix}"
+        used.add(notebook_id)
+        box["id"] = notebook_id
+        out.append(box)
+    return out
+
+
 def web_boxes_to_notebook(
     boxes: list[dict[str, Any]], container_m: dict[str, float]
 ) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
-    for b in boxes:
-        box_id = str(b.get("id") or b.get("sourceId") or "")
+    for i, b in enumerate(boxes):
+        web_id = str(b.get("id") or b.get("sourceId") or f"box-{i}")
         l_m, w_m, h_m = _dims_as_meters(
             float(b["length"]), float(b["width"]), float(b["height"]), container_m
         )
         out.append(
             {
-                "id": box_id,
-                "name": b.get("name") or f"Box {box_id}",
+                "id": web_id,
+                "web_id": web_id,
+                "name": b.get("name") or f"Box {web_id}",
                 "l": max(1, round(_m_to_cm(l_m))),
                 "w": max(1, round(_m_to_cm(w_m))),
                 "h": max(1, round(_m_to_cm(h_m))),
@@ -64,14 +98,97 @@ def web_boxes_to_notebook(
                 "fragile": _parse_fragile(b.get("fragile")),
             }
         )
-    return out
+    return _ensure_unique_notebook_ids(out)
+
+
+def _sanitize_chromosome(
+    chromosome: list[Any] | None,
+    catalog: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """
+    Repair OX crossover output: drop None/invalid entries, dedupe by id, append missing boxes.
+  """
+    by_id = {str(b["id"]): _copy_notebook_box(b) for b in catalog}
+    order: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    for item in chromosome or []:
+        if not isinstance(item, dict):
+            continue
+        bid = str(item.get("id", ""))
+        if not bid or bid in seen or bid not in by_id:
+            continue
+        seen.add(bid)
+        order.append(_copy_notebook_box(by_id[bid]))
+
+    for box in catalog:
+        bid = str(box["id"])
+        if bid not in seen:
+            order.append(_copy_notebook_box(box))
+
+    return order
+
+
+def _ga_search_budget(n: int, max_evals: int) -> tuple[int, int, int]:
+    """Keep web GA responsive; env2 defaults can explode for large n."""
+    n = max(1, n)
+    capped_evals = min(max_evals, max(800, n * 150))
+    pop_size = min(80, max(24, n))
+    generations = max(25, capped_evals // pop_size)
+    return capped_evals, pop_size, generations
+
+
+def _run_genetic(
+    ns: dict[str, Any],
+    container_obj: Any,
+    catalog: list[dict[str, Any]],
+    max_evals: int,
+) -> tuple[dict[str, Any], float]:
+    GeneticAlgorithm = ns["GeneticAlgorithm"]
+    Container = ns["Container"]
+    GreedyBFD = ns["GreedyBFD"]
+
+    _, pop_size, generations = _ga_search_budget(len(catalog), max_evals)
+
+    ga = GeneticAlgorithm(
+        container_obj,
+        [_copy_notebook_box(b) for b in catalog],
+        max_evals=max_evals,
+        pop_size=pop_size,
+        generations=generations,
+    )
+
+    original_evaluate = ga.evaluate
+
+    def safe_evaluate(chromosome: list[Any]) -> float:
+        return original_evaluate(_sanitize_chromosome(chromosome, catalog))
+
+    ga.evaluate = safe_evaluate  # type: ignore[method-assign]
+
+    out = ga.run()
+    best_solution = _sanitize_chromosome(out.get("best_solution"), catalog)
+
+    fresh = Container(container_obj.length, container_obj.width, container_obj.height)
+    best_result = fresh.pack_boxes(best_solution)
+    best_score = float(out.get("best_score") or 0)
+
+    placed_n = int(best_result.get("placed") or len(best_result.get("placed_boxes", [])))
+    if placed_n == 0 and catalog:
+        greedy = GreedyBFD(fresh, [_copy_notebook_box(b) for b in catalog]).run()
+        greedy_result = greedy["best_result"]
+        greedy_placed = len(greedy_result.get("placed_boxes", []))
+        if greedy_placed > 0:
+            return greedy_result, float(greedy["best_score"])
+
+    return best_result, best_score
 
 
 def notebook_placed_to_web(pb: dict[str, Any], lookup: dict[str, dict[str, Any]]) -> dict[str, Any]:
     pid = str(pb.get("id", ""))
-    src = lookup.get(pid, {})
+    web_id = str(pb.get("web_id") or pid)
+    src = lookup.get(web_id) or lookup.get(pid, {})
     return {
-        "id": pid or src.get("id", f"placed-{pb.get('x')}-{pb.get('y')}-{pb.get('z')}"),
+        "id": web_id or src.get("id", pid) or f"placed-{pb.get('x')}-{pb.get('y')}-{pb.get('z')}",
         "name": pb.get("name") or src.get("name", "Box"),
         "length": float(pb["l"]) / 100.0,
         "width": float(pb["w"]) / 100.0,
@@ -88,9 +205,10 @@ def notebook_placed_to_web(pb: dict[str, Any], lookup: dict[str, dict[str, Any]]
 
 def notebook_unplaced_to_web(ub: dict[str, Any], lookup: dict[str, dict[str, Any]]) -> dict[str, Any]:
     uid = str(ub.get("id", ""))
-    src = lookup.get(uid, {})
+    web_id = str(ub.get("web_id") or uid)
+    src = lookup.get(web_id) or lookup.get(uid, {})
     return {
-        "id": uid or src.get("id", "unplaced"),
+        "id": web_id or src.get("id", uid) or "unplaced",
         "name": src.get("name", f"Box {uid}"),
         "length": float(src.get("length", 0)),
         "width": float(src.get("width", 0)),
@@ -111,6 +229,13 @@ def build_web_response(
     lookup = {str(b.get("id", "")): b for b in web_boxes}
     placed = [notebook_placed_to_web(pb, lookup) for pb in best_result.get("placed_boxes", [])]
     unplaced = [notebook_unplaced_to_web(ub, lookup) for ub in best_result.get("unplaced_boxes", [])]
+
+    placed_ids = {str(p.get("id", "")) for p in placed}
+    unplaced_ids = {str(u.get("id", "")) for u in unplaced}
+    for wb in web_boxes:
+        wid = str(wb.get("id", ""))
+        if wid and wid not in placed_ids and wid not in unplaced_ids:
+            unplaced.append(notebook_unplaced_to_web({"id": wid, "web_id": wid}, lookup))
     util_pct = float(best_result.get("utilization") or 0)
     stability = best_result.get("stability") or {
         "weight_score": 0.0,
@@ -170,7 +295,7 @@ def run_pack(payload: dict[str, Any]) -> dict[str, Any]:
         "height": float(container.get("height", 2.39)),
     }
     py_boxes = web_boxes_to_notebook(web_boxes, container_m)
-    lookup = {str(b.get("id", "")): b for b in web_boxes}
+    catalog = [_copy_notebook_box(b) for b in py_boxes]
 
     length_cm = _m_to_cm(container_m["length"])
     width_cm = _m_to_cm(container_m["width"])
@@ -181,7 +306,7 @@ def run_pack(payload: dict[str, Any]) -> dict[str, Any]:
     with _quiet_stdout():
         if algorithm == "greedy-hc":
             GreedyBFD = ns["GreedyBFD"]
-            out = GreedyBFD(container_obj, py_boxes).run()
+            out = GreedyBFD(container_obj, catalog).run()
             best_result = out["best_result"]
             best_score = out["best_score"]
         elif algorithm == "sa":
@@ -189,17 +314,20 @@ def run_pack(payload: dict[str, Any]) -> dict[str, Any]:
             iterations = int(config.get("saIterations") or 1000)
             initial_t = float(config.get("saInitialT") or 5000)
             alpha = float(config.get("saAlpha") or 0.98)
-            sa = SimulatedAnnealing(container_obj, py_boxes, T=initial_t, alpha=alpha)
+            sa = SimulatedAnnealing(
+                container_obj,
+                [_copy_notebook_box(b) for b in catalog],
+                T=initial_t,
+                alpha=alpha,
+            )
             out = sa.run(iterations=iterations)
-            best_result = out["best_result"]
-            best_score = out["best_score"]
+            best_solution = _sanitize_chromosome(out.get("best_solution"), catalog)
+            fresh = Container(length_cm, width_cm, height_cm)
+            best_result = fresh.pack_boxes(best_solution)
+            best_score = float(out.get("best_score") or 0)
         else:
-            GeneticAlgorithm = ns["GeneticAlgorithm"]
             max_evals = int(config.get("gaMaxEvals") or 8000)
-            ga = GeneticAlgorithm(container_obj, py_boxes, max_evals=max_evals)
-            out = ga.run()
-            best_result = out["best_result"]
-            best_score = out["best_score"]
+            best_result, best_score = _run_genetic(ns, container_obj, catalog, max_evals)
 
     return build_web_response(best_result, best_score, web_boxes)
 
