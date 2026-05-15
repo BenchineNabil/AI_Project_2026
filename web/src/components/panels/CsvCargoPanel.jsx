@@ -35,6 +35,7 @@ export function CsvCargoPanel() {
   const canRun = useContainerStore(canExecuteCsvImport);
   const csvExecutePreviewRows = useContainerStore((s) => s.csvExecutePreviewRows);
   const packingBusy = useContainerStore((s) => s.packingBusy);
+  const packError = useContainerStore((s) => s.packError);
 
   const onPickFile = useCallback(() => inputRef.current?.click(), []);
 
@@ -145,6 +146,13 @@ export function CsvCargoPanel() {
           </span>
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">.csv only</span>
         </button>
+
+        {packError ? (
+          <div className="rounded-xl border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-xs text-red-100">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-red-200/90">Packer error</p>
+            <p className="mt-1 leading-snug">{packError}</p>
+          </div>
+        ) : null}
 
         {(csvFileName || csvUploadMessage) && (
           <div

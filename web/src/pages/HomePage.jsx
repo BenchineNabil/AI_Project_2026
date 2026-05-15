@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+﻿import { lazy, Suspense } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ContainerPanel } from "@/components/panels/ContainerPanel";
 import { CsvCargoPanel } from "@/components/panels/CsvCargoPanel";
@@ -16,7 +16,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Cuboid, Loader2, Menu, Play } from "lucide-react";
+import { PackingOverlay } from "@/components/ui/PackingOverlay";
+import { Cuboid, Menu, Play } from "lucide-react";
 
 const Scene = lazy(() => import("@/components/scene/Scene"));
 
@@ -62,30 +63,12 @@ function SceneLoading() {
 export default function HomePage() {
   const executeCsvImport = useContainerStore((s) => s.executeCsvImport);
   const canRunDeck = useContainerStore(canExecuteCsvImport);
-  const packingBusy = useContainerStore((s) => s.packingBusy);
   const reduceMotion = useReducedMotion();
   const pageSpring = reduceMotion ? { duration: 0 } : spring;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-      {packingBusy ? (
-        <div
-          className="pointer-events-auto fixed inset-0 z-[200] flex items-center justify-center bg-black/55 backdrop-blur-sm"
-          role="status"
-          aria-live="polite"
-          aria-busy="true"
-        >
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-[#0a101c]/95 px-10 py-8 shadow-xl">
-            <Loader2 className="size-10 shrink-0 animate-spin text-primary" aria-hidden />
-            <p className="text-center font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Running packer…
-            </p>
-            <p className="max-w-[16rem] text-center text-[11px] leading-relaxed text-muted-foreground/90">
-              Optimizing layout — this may take a moment for genetic / SA runs.
-            </p>
-          </div>
-        </div>
-      ) : null}
+      <PackingOverlay />
       <motion.header
         initial={false}
         animate={{ opacity: 1, y: 0 }}
@@ -103,8 +86,8 @@ export default function HomePage() {
                 VoxelBerth
               </h1>
               <p className="font-mono text-[10px] leading-snug text-muted-foreground sm:text-[11px] sm:leading-normal">
-                <span className="sm:hidden">Load deck · 3D packing</span>
-                <span className="hidden sm:inline">Stowage console · volumetric load deck</span>
+                <span className="sm:hidden">Load deck Â· 3D packing</span>
+                <span className="hidden sm:inline">Stowage console Â· volumetric load deck</span>
               </p>
             </div>
           </div>
@@ -120,11 +103,7 @@ export default function HomePage() {
               onClick={() => void executeCsvImport()}
               className="min-h-10 gap-2 px-4 shadow-[0_8px_24px_-12px_rgba(255,107,53,0.5)] disabled:opacity-45"
             >
-              {packingBusy ? (
-                <Loader2 className="size-4 shrink-0 animate-spin fill-none" aria-hidden />
-              ) : (
-                <Play className="size-4 shrink-0 fill-current" aria-hidden />
-              )}
+              <Play className="size-4 shrink-0 fill-current" aria-hidden />
               <span className="hidden sm:inline">Execute deck</span>
               <span className="sm:hidden">Run</span>
             </Button>
@@ -146,7 +125,7 @@ export default function HomePage() {
                       Bridge panels
                     </SheetTitle>
                     <p className="text-left text-sm leading-relaxed text-muted-foreground sm:text-[13px]">
-                      Vessel, cargo, view options, telemetry, and manifest — optimized for small screens.
+                      Vessel, cargo, view options, telemetry, and manifest â€” optimized for small screens.
                     </p>
                   </SheetHeader>
                 </div>
@@ -166,7 +145,7 @@ export default function HomePage() {
       </motion.header>
 
       <p className="mx-auto max-w-[1920px] px-4 pb-1 text-xs leading-relaxed text-muted-foreground lg:hidden">
-        <span className="font-medium text-foreground/90">Workflow</span> — Upload CSV in{" "}
+        <span className="font-medium text-foreground/90">Workflow</span> â€” Upload CSV in{" "}
         <span className="text-foreground/80">Cargo intake</span>, set max boxes + algorithm, then{" "}
         <span className="text-foreground/80">Run</span> or <span className="text-foreground/80">Execute deck</span>. Uses a{" "}
         <span className="text-foreground/80">random subset</span> of N staged rows each run. Use
@@ -205,7 +184,7 @@ export default function HomePage() {
               Deck viewport
             </span>
             <span className="pointer-events-none absolute right-4 bottom-4 z-[2] hidden font-mono text-[10px] uppercase tracking-[0.25em] text-white/20 lg:right-6 lg:bottom-5 lg:block">
-              Orbit · pinch / scroll zoom
+              Orbit Â· pinch / scroll zoom
             </span>
             <div className="relative z-[1] flex min-h-0 flex-1 overflow-hidden rounded-[1.35rem] ring-1 ring-inset ring-white/[0.04] lg:rounded-[1.65rem]">
               <Suspense fallback={<SceneLoading />}>
@@ -224,8 +203,8 @@ export default function HomePage() {
           <p className="shrink-0 pl-1 pt-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.35em] text-muted-foreground/90">
             Live manifest
           </p>
-          <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pl-1 [scrollbar-gutter:stable]">
-            <BoxListPanel className="shrink-0 pb-4" />
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden pl-1">
+            <BoxListPanel className="min-h-0 flex-1 pb-4" />
           </div>
         </motion.aside>
       </div>

@@ -1,24 +1,29 @@
 /**
- * Shared Express app for /api and /api/pack (same handlers as the original Next.js routes).
- * Used by Vite dev middleware (one port) and optionally by server/index.js (standalone).
+ * Shared Express app for /api and /api/pack.
+ * Packing runs Python against environment/env2.ipynb (see server/python/).
  */
 import express from "express";
 import cors from "cors";
-import { packBoxes } from "../src/lib/packing/algorithm.js";
-import { packWithSelectedAlgorithm } from "../src/lib/packing/metaAlgorithms.js";
+import { runPythonPack, ENV2_NOTEBOOK } from "./runPythonPack.js";
+import { existsSync } from "fs";
 
 export function createApiApp() {
   const app = express();
   app.use(cors({ origin: true }));
-  app.use(express.json());
+  app.use(express.json({ limit: "12mb" }));
 
   app.get("/api", (_req, res) => {
-    res.json({ message: "Hello, world!" });
+    res.json({
+      message: "VoxelBerth API",
+      packEngine: "env2.ipynb",
+      notebookPath: ENV2_NOTEBOOK,
+      notebookFound: existsSync(ENV2_NOTEBOOK),
+    });
   });
 
-  app.post("/api/pack", (req, res) => {
+  app.post("/api/pack", async (req, res) => {
     try {
-      const { boxes, container, algorithm } = req.body;
+      const { boxes, container, algorithm, config } = req.body;
 
       if (!boxes || !Array.isArray(boxes)) {
         return res.status(400).json({
@@ -51,14 +56,34 @@ export function createApiApp() {
       }
 
       const algo =
-        algorithm === "sa" || algorithm === "genetic" || algorithm === "greedy-hc" ? algorithm : null;
-      const result =
-        algo != null ? packWithSelectedAlgorithm(boxes, container, algo) : packBoxes(boxes, container);
+        algorithm === "sa" || algorithm === "genetic" || algorithm === "greedy-hc"
+          ? algorithm
+          : null;
+
+      if (!algo) {
+        return res.status(400).json({
+          error: "algorithm is required: sa, genetic, or greedy-hc",
+        });
+      }
+
+      if (!existsSync(ENV2_NOTEBOOK)) {
+        return res.status(503).json({
+          error: `env2.ipynb not found at ${ENV2_NOTEBOOK}`,
+        });
+      }
+
+      const result = await runPythonPack({
+        boxes,
+        container,
+        algorithm: algo,
+        config: config ?? {},
+      });
+
       return res.json(result);
     } catch (error) {
       console.error("Packing API error:", error);
       return res.status(500).json({
-        error: "Internal server error during packing calculation",
+        error: error instanceof Error ? error.message : "Internal server error during packing",
       });
     }
   });

@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { CONTAINER_PRESETS, BOX_COLORS } from "./packing/types";
-import { packBoxes } from "./packing/algorithm";
-import { packWithSelectedAlgorithm } from "./packing/metaAlgorithms";
 import { parseCsvBoxes } from "./csvBoxParser";
-import { getPackSearchConfig } from "./packing/packEnv";
-import { evaluateStabilityForPlaced, computeResultScore } from "./packing/stabilityMetrics";
+import { packViaApi } from "./packingApi";
 import { shuffleIndices } from "./shuffleIndices";
+import { PACK_ALGORITHM_OPTIONS } from "./packAlgorithmUi";
+
+const ALGO_LABEL = Object.fromEntries(PACK_ALGORITHM_OPTIONS.map((o) => [o.id, o.label]));
 
 let colorIndex = 0;
 function nextColor() {
@@ -31,14 +31,14 @@ export const useContainerStore = create((set, get) => ({
       containerPreset: preset,
       container: { ...CONTAINER_PRESETS[preset] },
     });
-    get().runPacking();
+    void get().runPacking();
   },
   updateContainer: (dims) => {
     set((state) => ({
       container: { ...state.container, ...dims },
       containerPreset: "Custom",
     }));
-    get().runPacking();
+    void get().runPacking();
   },
 
   boxes: [],
@@ -49,17 +49,17 @@ export const useContainerStore = create((set, get) => ({
       color: nextColor(),
     };
     set((state) => ({ boxes: [...state.boxes, newBox] }));
-    get().runPacking();
+    void get().runPacking();
   },
   removeBox: (id) => {
     set((state) => ({ boxes: state.boxes.filter((b) => b.id !== id) }));
-    get().runPacking();
+    void get().runPacking();
   },
   updateBox: (id, updates) => {
     set((state) => ({
       boxes: state.boxes.map((b) => (b.id === id ? { ...b, ...updates } : b)),
     }));
-    get().runPacking();
+    void get().runPacking();
   },
   clearBoxes: () =>
     set({
@@ -80,8 +80,10 @@ export const useContainerStore = create((set, get) => ({
       lastRunAlgorithm: null,
       csvExecutePreviewRows: [],
       packingBusy: false,
+      packingPhase: "",
       lastStability: null,
       lastPackScore: null,
+      packError: null,
     }),
 
   /** Staged CSV rows (not yet applied to `boxes` until execute). */
@@ -103,8 +105,10 @@ export const useContainerStore = create((set, get) => ({
   /** Last randomly chosen staged rows used on Execute (preview = this list). */
   csvExecutePreviewRows: [],
   packingBusy: false,
+  packingPhase: "",
   lastStability: null,
   lastPackScore: null,
+  packError: null,
 
   clearCsvImport: () =>
     set({
@@ -166,7 +170,6 @@ export const useContainerStore = create((set, get) => ({
     if (!s.selectedPackAlgorithm || !Number.isFinite(n) || n < 1 || s.parsedCsvBoxes.length === 0) return;
     if (s.csvUploadStatus !== "success") return;
 
-    set({ packingBusy: true });
     try {
       await yieldToBrowser();
 
@@ -191,10 +194,13 @@ export const useContainerStore = create((set, get) => ({
         csvExecutePreviewRows: chosen,
         lastRunAlgorithm: s.selectedPackAlgorithm,
       });
-      await yieldToBrowser();
-      get().runPacking();
-    } finally {
-      set({ packingBusy: false });
+      await get().runPacking();
+    } catch (e) {
+      set({
+        packError: e instanceof Error ? e.message : "Execute failed",
+        packingBusy: false,
+        packingPhase: "",
+      });
     }
   },
 
@@ -204,30 +210,81 @@ export const useContainerStore = create((set, get) => ({
   totalBoxes: 0,
   placedCount: 0,
 
-  runPacking: () => {
+  runPacking: async () => {
     const s = get();
-    const result =
-      s.selectedPackAlgorithm != null
-        ? packWithSelectedAlgorithm(s.boxes, s.container, s.selectedPackAlgorithm)
-        : packBoxes(s.boxes, s.container);
-
-    let lastStability = null;
-    let lastPackScore = null;
-    if (result.totalBoxes > 0) {
-      lastStability = evaluateStabilityForPlaced(result.placed);
-      lastPackScore = computeResultScore(lastStability, result.utilization, getPackSearchConfig());
+    if (s.boxes.length === 0) {
+      set({
+        placedBoxes: [],
+        unplacedBoxes: [],
+        utilization: 0,
+        totalBoxes: 0,
+        placedCount: 0,
+        lastStability: null,
+        lastPackScore: null,
+        packError: null,
+      });
+      return;
     }
 
+    if (!s.selectedPackAlgorithm) {
+      set({ packError: "Select a packing algorithm before running." });
+      return;
+    }
+
+    const algoLabel = ALGO_LABEL[s.selectedPackAlgorithm] ?? s.selectedPackAlgorithm;
     set({
-      placedBoxes: result.placed,
-      unplacedBoxes: result.unplaced,
-      utilization: result.utilization,
-      totalBoxes: result.totalBoxes,
-      placedCount: result.placedCount,
-      lastStability,
-      lastPackScore,
-      ...(s.selectedPackAlgorithm != null ? { lastRunAlgorithm: s.selectedPackAlgorithm } : {}),
+      packingBusy: true,
+      packingPhase: `Loading env2.ipynb — ${algoLabel}…`,
+      packError: null,
     });
+    await yieldToBrowser();
+
+    try {
+      set({ packingPhase: `Python search running (${algoLabel})…` });
+      const result = await packViaApi({
+        boxes: get().boxes,
+        container: get().container,
+        algorithm: get().selectedPackAlgorithm,
+      });
+
+      const placed = result.placed ?? [];
+      const unplaced = result.unplaced ?? [];
+      const total = result.totalBoxes ?? get().boxes.length;
+      const placedCount = result.placedCount ?? placed.length;
+
+      set({
+        placedBoxes: placed,
+        unplacedBoxes: unplaced,
+        utilization: result.utilization ?? 0,
+        totalBoxes: total,
+        placedCount,
+        lastStability: result.stability ?? null,
+        lastPackScore: result.score ?? null,
+        lastRunAlgorithm: get().selectedPackAlgorithm,
+        packingPhase: "Applying results…",
+        packError:
+          placedCount === 0 && total > 0
+            ? "No boxes could be placed. Check CSV units (data.csv uses cm) and container size, or see server logs if Python failed."
+            : null,
+      });
+    } catch (e) {
+      set({
+        packError: e instanceof Error ? e.message : "Packing failed",
+        placedBoxes: [],
+        unplacedBoxes: get().boxes.map((b) => ({
+          ...b,
+          placed: false,
+          reason: "Packer error",
+        })),
+        utilization: 0,
+        placedCount: 0,
+        totalBoxes: get().boxes.length,
+        lastStability: null,
+        lastPackScore: null,
+      });
+    } finally {
+      set({ packingBusy: false, packingPhase: "" });
+    }
   },
 
   selectedBoxId: null,
