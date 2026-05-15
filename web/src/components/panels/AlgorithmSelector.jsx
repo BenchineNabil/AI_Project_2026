@@ -7,12 +7,13 @@ const tap = { scale: 0.97 };
 const hoverLift = { y: -2, transition: { type: "spring", stiffness: 420, damping: 26 } };
 
 /**
- * Single-select packing algorithm (stored in zustand; drives {@link packWithSelectedAlgorithm} when set).
+ * Single-select packing algorithm (runs via Python env2.ipynb on execute).
  */
 export function AlgorithmSelector({ className }) {
   const reduceMotion = useReducedMotion();
   const value = useContainerStore((s) => s.selectedPackAlgorithm);
   const onChange = useContainerStore((s) => s.setSelectedPackAlgorithm);
+  const packingBusy = useContainerStore((s) => s.packingBusy);
 
   return (
     <div
@@ -38,10 +39,11 @@ export function AlgorithmSelector({ className }) {
               whileTap={reduceMotion ? undefined : tap}
               whileHover={reduceMotion || selected ? undefined : hoverLift}
               transition={{ type: "spring", stiffness: 520, damping: 32 }}
+              disabled={packingBusy}
               onClick={() => onChange(selected ? null : opt.id)}
               title={opt.blurb}
               className={cn(
-                "relative min-h-10 min-w-[4.25rem] flex-1 overflow-hidden rounded-xl border px-2 py-2 text-center text-xs font-semibold tracking-tight transition-colors duration-200 sm:min-h-9 sm:min-w-[5.25rem] sm:flex-none sm:px-3 sm:py-1.5 sm:text-[13px]",
+                "relative min-h-10 min-w-[4.25rem] flex-1 overflow-hidden rounded-xl border px-2 py-2 text-center text-xs font-semibold tracking-tight transition-colors duration-200 sm:min-h-9 sm:min-w-[5.25rem] sm:flex-none sm:px-3 sm:py-1.5 sm:text-[13px] disabled:pointer-events-none disabled:opacity-45",
                 selected
                   ? "border-primary/55 bg-gradient-to-br from-primary/25 via-primary/15 to-orange-500/10 text-foreground shadow-[0_0_0_1px_rgba(255,107,53,0.2),0_8px_28px_-12px_rgba(255,107,53,0.35)]"
                   : "border-transparent bg-white/[0.04] text-muted-foreground hover:border-white/15 hover:bg-white/[0.08] hover:text-foreground"

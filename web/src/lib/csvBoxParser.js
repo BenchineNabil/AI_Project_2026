@@ -117,7 +117,7 @@ export function parseCsvBoxes(text) {
     }
 
     const displayName = nameRaw.length > 0 ? nameRaw : `Box ${idRaw}`;
-    const dimScale = getCsvLengthScale();
+    const dimScale = resolveCsvDimScale(length, width, height);
 
     rows.push({
       sourceId: idRaw,
@@ -136,6 +136,17 @@ export function parseCsvBoxes(text) {
   }
 
   return { rows, errors };
+}
+
+/**
+ * Convert raw CSV L/W/H to meters for the 3D UI + Python packer.
+ * data.csv uses centimeters (e.g. 45, 130). If any edge is > 3, treat numbers as cm
+ * even when VITE_CSV_DIMENSION_UNIT=m is mis-set.
+ */
+function resolveCsvDimScale(length, width, height) {
+  const maxRaw = Math.max(length, width, height);
+  if (maxRaw > 3) return 0.01;
+  return getCsvLengthScale();
 }
 
 /** Whether the staged CSV + max + algorithm allow running packing (UI gate). */

@@ -8,10 +8,7 @@ import { cn } from "@/lib/utils";
 function DimLine({ box }) {
   const text = `${box.length.toFixed(1)}×${box.width.toFixed(1)}×${box.height.toFixed(1)}\u00a0m`;
   return (
-    <span
-      className="block truncate font-mono text-[11px] leading-tight tracking-tight text-muted-foreground tabular-nums sm:text-xs"
-      title={`${box.length.toFixed(1)} × ${box.width.toFixed(1)} × ${box.height.toFixed(1)} m`}
-    >
+    <span className="block truncate font-mono text-[11px] leading-tight tracking-tight text-muted-foreground tabular-nums sm:text-xs">
       {text}
     </span>
   );
@@ -22,7 +19,7 @@ export function BoxListPanel({ className }) {
     useContainerStore();
 
   return (
-    <Card className={cn("flex shrink-0 flex-col border-white/[0.07]", className)}>
+    <Card className={cn("flex min-h-0 flex-col gap-3 border-white/[0.07] py-4 lg:flex-1", className)}>
       <CardHeader className="shrink-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm normal-case tracking-normal">
           <span className="flex size-9 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-transparent ring-1 ring-violet-400/25">
@@ -31,8 +28,8 @@ export function BoxListPanel({ className }) {
           Manifest ledger
         </CardTitle>
       </CardHeader>
-      <CardContent className="shrink-0 pt-0">
-        <div className="max-h-72 space-y-2 overflow-y-auto overscroll-y-contain rounded-2xl border border-white/[0.06] bg-black/20 p-2.5 sm:max-h-80 lg:max-h-none">
+      <CardContent className="flex min-h-0 flex-1 flex-col pt-0">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-y-contain rounded-2xl border border-white/[0.06] bg-black/20 p-2.5 max-h-72 sm:max-h-80 lg:max-h-none">
           {boxes.length === 0 && (
             <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-10 text-center">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
