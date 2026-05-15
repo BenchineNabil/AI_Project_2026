@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" class="dark antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Volumetric stowage console — 3D container packing visualization."
+    />
+    <title>VoxelBerth — Stowage Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-geist-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+        --font-geist-mono: "IBM Plex Mono", ui-monospace, monospace;
+        --font-display: "Syne", "Outfit", ui-sans-serif, system-ui, sans-serif;
+      }
+      html,
+      body {
+        height: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+      #root {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        min-height: 100dvh;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body class="min-h-full bg-background text-foreground">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
