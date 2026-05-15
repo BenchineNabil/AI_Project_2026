@@ -7,7 +7,7 @@ const tap = { scale: 0.97 };
 const hoverLift = { y: -2, transition: { type: "spring", stiffness: 420, damping: 26 } };
 
 /**
- * Single-select packing algorithm (stored in zustand; wiring to packers is future work).
+ * Single-select packing algorithm (stored in zustand; drives {@link packWithSelectedAlgorithm} when set).
  */
 export function AlgorithmSelector({ className }) {
   const reduceMotion = useReducedMotion();

@@ -2,7 +2,11 @@
  * Client-side CSV → box rows for staging (no packing).
  * Expected columns (header, case-insensitive): id, name, length, width, height, weight, fragile
  * fragile must be the literal "true" or "false" (case-insensitive).
+ *
+ * Length/width/height are scaled by {@link getCsvLengthScale} (default: cm → m for `data.csv`).
  */
+
+import { getCsvLengthScale } from "./packing/packEnv.js";
 
 function splitCsvLine(line) {
   const out = [];
@@ -113,13 +117,14 @@ export function parseCsvBoxes(text) {
     }
 
     const displayName = nameRaw.length > 0 ? nameRaw : `Box ${idRaw}`;
+    const dimScale = getCsvLengthScale();
 
     rows.push({
       sourceId: idRaw,
       name: displayName,
-      length,
-      width,
-      height,
+      length: length * dimScale,
+      width: width * dimScale,
+      height: height * dimScale,
       weight,
       fragile: fragileParsed.value,
       rowIndex: lineNum,
@@ -137,6 +142,7 @@ export function parseCsvBoxes(text) {
 export function canExecuteCsvImport(state) {
   const n = parseInt(String(state.maxBoxesToUseInput ?? "").trim(), 10);
   return (
+    !state.packingBusy &&
     state.csvUploadStatus === "success" &&
     state.parsedCsvBoxes.length > 0 &&
     state.selectedPackAlgorithm != null &&

@@ -1,13 +1,22 @@
 import { create } from "zustand";
 import { CONTAINER_PRESETS, BOX_COLORS } from "./packing/types";
 import { packBoxes } from "./packing/algorithm";
+import { packWithSelectedAlgorithm } from "./packing/metaAlgorithms";
 import { parseCsvBoxes } from "./csvBoxParser";
+import { getPackSearchConfig } from "./packing/packEnv";
+import { evaluateStabilityForPlaced, computeResultScore } from "./packing/stabilityMetrics";
+import { shuffleIndices } from "./shuffleIndices";
 
 let colorIndex = 0;
 function nextColor() {
   const color = BOX_COLORS[colorIndex % BOX_COLORS.length];
   colorIndex++;
   return color;
+}
+
+async function yieldToBrowser() {
+  await new Promise((r) => setTimeout(r, 0));
+  await new Promise((r) => requestAnimationFrame(r));
 }
 
 export const useContainerStore = create((set, get) => ({
@@ -69,6 +78,10 @@ export const useContainerStore = create((set, get) => ({
       maxBoxesToUseInput: "",
       selectedPackAlgorithm: null,
       lastRunAlgorithm: null,
+      csvExecutePreviewRows: [],
+      packingBusy: false,
+      lastStability: null,
+      lastPackScore: null,
     }),
 
   /** Staged CSV rows (not yet applied to `boxes` until execute). */
@@ -87,6 +100,12 @@ export const useContainerStore = create((set, get) => ({
   /** Last algorithm used when execute ran (for display / future wiring). */
   lastRunAlgorithm: null,
 
+  /** Last randomly chosen staged rows used on Execute (preview = this list). */
+  csvExecutePreviewRows: [],
+  packingBusy: false,
+  lastStability: null,
+  lastPackScore: null,
+
   clearCsvImport: () =>
     set({
       parsedCsvBoxes: [],
@@ -95,6 +114,7 @@ export const useContainerStore = create((set, get) => ({
       csvUploadStatus: "idle",
       csvUploadMessage: "",
       maxBoxesToUseInput: "",
+      csvExecutePreviewRows: [],
     }),
 
   ingestCsvFromFile: async (file) => {
@@ -112,6 +132,7 @@ export const useContainerStore = create((set, get) => ({
           parsedCsvBoxes: [],
           csvFileName: fileName,
           maxBoxesToUseInput: "",
+          csvExecutePreviewRows: [],
         });
         return;
       }
@@ -120,6 +141,7 @@ export const useContainerStore = create((set, get) => ({
         csvParseErrors: errors,
         csvFileName: fileName,
         csvUploadStatus: "success",
+        csvExecutePreviewRows: [],
         csvUploadMessage: `Ready: ${rows.length} box${rows.length !== 1 ? "es" : ""}${
           errors.length ? ` — ${errors.length} row warning${errors.length !== 1 ? "s" : ""}` : ""
         }`,
@@ -133,29 +155,47 @@ export const useContainerStore = create((set, get) => ({
         csvParseErrors: [],
         csvFileName: null,
         maxBoxesToUseInput: "",
+        csvExecutePreviewRows: [],
       });
     }
   },
 
-  executeCsvImport: () => {
+  executeCsvImport: async () => {
     const s = get();
     const n = parseInt(String(s.maxBoxesToUseInput ?? "").trim(), 10);
     if (!s.selectedPackAlgorithm || !Number.isFinite(n) || n < 1 || s.parsedCsvBoxes.length === 0) return;
     if (s.csvUploadStatus !== "success") return;
-    const cap = Math.min(n, s.parsedCsvBoxes.length);
-    const slice = s.parsedCsvBoxes.slice(0, cap);
-    const newBoxes = slice.map((b, idx) => ({
-      id: `box-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 9)}`,
-      name: b.name,
-      length: b.length,
-      width: b.width,
-      height: b.height,
-      weight: b.weight,
-      fragile: Boolean(b.fragile),
-      color: nextColor(),
-    }));
-    set({ boxes: newBoxes, lastRunAlgorithm: s.selectedPackAlgorithm });
-    get().runPacking();
+
+    set({ packingBusy: true });
+    try {
+      await yieldToBrowser();
+
+      const pool = get().parsedCsvBoxes;
+      const cap = Math.min(n, pool.length);
+      const order = shuffleIndices(pool.length);
+      const chosen = order.slice(0, cap).map((i) => pool[i]);
+
+      const newBoxes = chosen.map((b, idx) => ({
+        id: `box-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 9)}`,
+        name: b.name,
+        length: b.length,
+        width: b.width,
+        height: b.height,
+        weight: b.weight,
+        fragile: Boolean(b.fragile),
+        color: nextColor(),
+      }));
+
+      set({
+        boxes: newBoxes,
+        csvExecutePreviewRows: chosen,
+        lastRunAlgorithm: s.selectedPackAlgorithm,
+      });
+      await yieldToBrowser();
+      get().runPacking();
+    } finally {
+      set({ packingBusy: false });
+    }
   },
 
   placedBoxes: [],
@@ -165,14 +205,28 @@ export const useContainerStore = create((set, get) => ({
   placedCount: 0,
 
   runPacking: () => {
-    const { boxes, container } = get();
-    const result = packBoxes(boxes, container);
+    const s = get();
+    const result =
+      s.selectedPackAlgorithm != null
+        ? packWithSelectedAlgorithm(s.boxes, s.container, s.selectedPackAlgorithm)
+        : packBoxes(s.boxes, s.container);
+
+    let lastStability = null;
+    let lastPackScore = null;
+    if (result.totalBoxes > 0) {
+      lastStability = evaluateStabilityForPlaced(result.placed);
+      lastPackScore = computeResultScore(lastStability, result.utilization, getPackSearchConfig());
+    }
+
     set({
       placedBoxes: result.placed,
       unplacedBoxes: result.unplaced,
       utilization: result.utilization,
       totalBoxes: result.totalBoxes,
       placedCount: result.placedCount,
+      lastStability,
+      lastPackScore,
+      ...(s.selectedPackAlgorithm != null ? { lastRunAlgorithm: s.selectedPackAlgorithm } : {}),
     });
   },
 

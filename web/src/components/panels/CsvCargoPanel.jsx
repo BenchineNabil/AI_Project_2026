@@ -16,8 +16,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const PREVIEW_ROWS = 45;
-
 export function CsvCargoPanel() {
   const inputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
@@ -35,6 +33,8 @@ export function CsvCargoPanel() {
   const maxBoxesToUseInput = useContainerStore((s) => s.maxBoxesToUseInput);
   const setMaxBoxesToUseInput = useContainerStore((s) => s.setMaxBoxesToUseInput);
   const canRun = useContainerStore(canExecuteCsvImport);
+  const csvExecutePreviewRows = useContainerStore((s) => s.csvExecutePreviewRows);
+  const packingBusy = useContainerStore((s) => s.packingBusy);
 
   const onPickFile = useCallback(() => inputRef.current?.click(), []);
 
@@ -74,6 +74,13 @@ export function CsvCargoPanel() {
   const success = csvUploadStatus === "success";
   const failed = csvUploadStatus === "error";
 
+  const previewRows =
+    csvExecutePreviewRows.length > 0 ? csvExecutePreviewRows : parsedCsvBoxes;
+  const previewLabel =
+    csvExecutePreviewRows.length > 0
+      ? `Active load (${previewRows.length} random) — matches deck`
+      : `Staged file (${previewRows.length} row${previewRows.length !== 1 ? "s" : ""})`;
+
   return (
     <Card className="shrink-0 border-white/[0.07]">
       <CardHeader className="pb-2">
@@ -90,9 +97,11 @@ export function CsvCargoPanel() {
           <code className="rounded border border-white/10 bg-black/30 px-1.5 py-0.5 font-mono text-[10px] text-accent/90">
             id,name,length,width,height,weight,fragile
           </code>
-          . Use <span className="text-foreground/90">true</span> or{" "}
-          <span className="text-foreground/90">false</span> for fragile (case-insensitive). Nothing is packed until you
-          run execute.
+          . By default L/W/H are treated as <span className="text-foreground/90">centimeters</span> (converted to
+          meters for packing); set <span className="font-mono text-[10px] text-foreground/80">VITE_CSV_DIMENSION_UNIT=m</span>{" "}
+          in <span className="font-mono text-[10px]">environment/.env</span> if your file is already in meters. Use{" "}
+          <span className="text-foreground/90">true</span> or <span className="text-foreground/90">false</span> for fragile
+          (case-insensitive). Nothing is packed until you run execute.
         </p>
 
         <input
@@ -185,8 +194,8 @@ export function CsvCargoPanel() {
                 className="h-10 font-mono text-sm tabular-nums"
               />
               <p className="font-mono text-[10px] text-muted-foreground">
-                Staged: <span className="text-foreground">{parsedCsvBoxes.length}</span> — uses first N rows after
-                execute.
+                Staged: <span className="text-foreground">{parsedCsvBoxes.length}</span> — each execute randomly picks N
+                rows (uniform, not first-N).
               </p>
             </div>
 
@@ -195,8 +204,8 @@ export function CsvCargoPanel() {
                 <Label className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   Preview
                 </Label>
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  Showing {Math.min(PREVIEW_ROWS, parsedCsvBoxes.length)} / {parsedCsvBoxes.length}
+                <span className="max-w-[12rem] truncate text-right font-mono text-[10px] text-muted-foreground">
+                  {previewLabel}
                 </span>
               </div>
               <div className="max-h-56 overflow-auto rounded-xl border border-white/[0.08] bg-black/30 shadow-inner">
@@ -214,9 +223,9 @@ export function CsvCargoPanel() {
                     </tr>
                   </thead>
                   <tbody className="text-muted-foreground">
-                    {parsedCsvBoxes.slice(0, PREVIEW_ROWS).map((row, idx) => (
+                    {previewRows.map((row, idx) => (
                       <tr
-                        key={`${row.rowIndex}-${idx}`}
+                        key={`${row.rowIndex}-${idx}-${row.sourceId}`}
                         className="border-b border-white/[0.04] transition-colors hover:bg-white/[0.04]"
                       >
                         <td className="px-2 py-1.5 font-mono text-[10px] text-muted-foreground/80">{idx + 1}</td>
@@ -244,9 +253,9 @@ export function CsvCargoPanel() {
             variant="default"
             className="min-h-11 flex-1 gap-2 shadow-[0_8px_28px_-12px_rgba(255,107,53,0.45)]"
             disabled={!canRun}
-            onClick={() => executeCsvImport()}
+            onClick={() => void executeCsvImport()}
           >
-            <Play className="size-4 shrink-0 fill-current" />
+            {packingBusy ? <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden /> : <Play className="size-4 shrink-0 fill-current" aria-hidden />}
             Execute deck
           </Button>
         </div>

@@ -2,18 +2,37 @@ import { useContainerStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Activity, CheckCircle2, Package, XCircle } from "lucide-react";
+import { Activity, Anchor, BarChart2, CheckCircle2, Package, XCircle } from "lucide-react";
 
 /**
  * layout="strip" — horizontal telemetry bar under the 3D viewport (desktop + mobile).
  * layout="card" — classic stacked card (side rails + mobile drawer).
  */
 export function StatsPanel({ layout = "card", className }) {
-  const { utilization, totalBoxes, placedCount, unplacedBoxes, container } = useContainerStore();
+  const {
+    utilization,
+    totalBoxes,
+    placedCount,
+    unplacedBoxes,
+    container,
+    lastPackScore,
+    lastStability,
+  } = useContainerStore();
 
   const utilizationPercent = Math.round(utilization * 100);
   const containerVolume = container.length * container.width * container.height;
   const usedVolume = utilization * containerVolume;
+
+  const scoreDisplay = lastPackScore == null ? "—" : lastPackScore.toFixed(2);
+  const stabilityDisplay =
+    lastStability == null || lastStability.stability_score == null ? "—" : lastStability.stability_score.toFixed(2);
+  const stabilityDetail =
+    lastStability != null &&
+    lastStability.weight_score != null &&
+    lastStability.support_score != null &&
+    (lastStability.weight_score !== 0 || lastStability.support_score !== 0 || totalBoxes > 0)
+      ? `w ${lastStability.weight_score.toFixed(1)} · s ${lastStability.support_score.toFixed(1)}`
+      : null;
 
   if (layout === "strip") {
     return (
@@ -64,6 +83,20 @@ export function StatsPanel({ layout = "card", className }) {
               </p>
             </div>
           </div>
+          <div className="flex min-w-[6rem] flex-1 flex-col rounded-2xl border border-primary/20 bg-primary/10 px-3 py-2.5 sm:min-w-[5.5rem] sm:flex-none sm:py-2">
+            <span className="flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-wider text-primary sm:text-[9px]">
+              <BarChart2 className="size-3.5 shrink-0 sm:size-3" />
+              Score
+            </span>
+            <span className="font-display text-2xl font-bold tabular-nums text-foreground sm:text-xl">{scoreDisplay}</span>
+          </div>
+          <div className="flex min-w-[6rem] flex-1 flex-col rounded-2xl border border-sky-500/25 bg-sky-500/10 px-3 py-2.5 sm:min-w-[5.5rem] sm:flex-none sm:py-2">
+            <span className="flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-wider text-sky-200/90 sm:text-[9px]">
+              <Anchor className="size-3.5 shrink-0 sm:size-3" />
+              Stability
+            </span>
+            <span className="font-display text-2xl font-bold tabular-nums text-foreground sm:text-xl">{stabilityDisplay}</span>
+          </div>
         </div>
       </div>
     );
@@ -104,6 +137,23 @@ export function StatsPanel({ layout = "card", className }) {
             </div>
             <div className="font-display text-2xl font-bold text-foreground">{unplacedBoxes.length}</div>
           </div>
+          <div className="rounded-2xl border border-primary/25 bg-primary/10 p-3">
+            <div className="mb-1 flex items-center gap-1.5 text-primary">
+              <BarChart2 className="size-3.5" />
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider">Score</span>
+            </div>
+            <div className="font-display text-2xl font-bold tabular-nums text-foreground">{scoreDisplay}</div>
+          </div>
+          <div className="rounded-2xl border border-sky-500/25 bg-sky-500/10 p-3">
+            <div className="mb-1 flex items-center gap-1.5 text-sky-200">
+              <Anchor className="size-3.5" />
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider">Stability</span>
+            </div>
+            <div className="font-display text-2xl font-bold tabular-nums text-foreground">{stabilityDisplay}</div>
+            {stabilityDetail ? (
+              <p className="mt-1 font-mono text-[10px] tabular-nums text-muted-foreground">{stabilityDetail}</p>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/20 px-3 py-2.5 font-mono text-xs text-muted-foreground">
@@ -113,6 +163,17 @@ export function StatsPanel({ layout = "card", className }) {
             {totalBoxes !== 1 ? "s" : ""}
           </span>
         </div>
+
+        {lastStability == null && totalBoxes > 0 ? (
+          <p className="font-mono text-[10px] leading-relaxed text-amber-200/90">
+            Set{" "}
+            <span className="text-foreground/90">
+              VITE_STABILITY_MIN_OVERLAP_RATIO, VITE_STABILITY_WEIGHT_IMPORTANCE, VITE_STABILITY_SUPPORT_IMPORTANCE
+            </span>{" "}
+            in <span className="text-foreground/90">environment/.env</span> (values from env ahmed notebook) to compute
+            score and stability.
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   );

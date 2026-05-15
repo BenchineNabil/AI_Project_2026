@@ -5,6 +5,7 @@
 import express from "express";
 import cors from "cors";
 import { packBoxes } from "../src/lib/packing/algorithm.js";
+import { packWithSelectedAlgorithm } from "../src/lib/packing/metaAlgorithms.js";
 
 export function createApiApp() {
   const app = express();
@@ -17,7 +18,7 @@ export function createApiApp() {
 
   app.post("/api/pack", (req, res) => {
     try {
-      const { boxes, container } = req.body;
+      const { boxes, container, algorithm } = req.body;
 
       if (!boxes || !Array.isArray(boxes)) {
         return res.status(400).json({
@@ -49,7 +50,10 @@ export function createApiApp() {
         }
       }
 
-      const result = packBoxes(boxes, container);
+      const algo =
+        algorithm === "sa" || algorithm === "genetic" || algorithm === "greedy-hc" ? algorithm : null;
+      const result =
+        algo != null ? packWithSelectedAlgorithm(boxes, container, algo) : packBoxes(boxes, container);
       return res.json(result);
     } catch (error) {
       console.error("Packing API error:", error);

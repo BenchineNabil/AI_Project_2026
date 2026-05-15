@@ -9,13 +9,14 @@
  * NOTE: This file is a straight port of the original algorithm.ts — logic unchanged.
  */
 
-export function packBoxes(boxes, container) {
+/**
+ * Pack boxes in a caller-defined sequence (same maximal-space / BLF rules as {@link packBoxes}).
+ * @param {import("./types").Box[]} sequence Processing order; typically a permutation of `boxes`.
+ * @param {import("./types").Container} container
+ */
+export function packBoxesWithSequence(sequence, container) {
   const placed = [];
   const unplaced = [];
-
-  const sortedBoxes = [...boxes].sort(
-    (a, b) => b.length * b.width * b.height - a.length * b.width * a.height
-  );
 
   let freeSpaces = [
     {
@@ -28,7 +29,7 @@ export function packBoxes(boxes, container) {
     },
   ];
 
-  for (const box of sortedBoxes) {
+  for (const box of sequence) {
     const rotations = getRotations(box);
 
     let bestSpace = null;
@@ -82,9 +83,16 @@ export function packBoxes(boxes, container) {
     unplaced,
     container,
     utilization: containerVolume > 0 ? usedVolume / containerVolume : 0,
-    totalBoxes: boxes.length,
+    totalBoxes: sequence.length,
     placedCount: placed.length,
   };
+}
+
+export function packBoxes(boxes, container) {
+  const sortedBoxes = [...boxes].sort(
+    (a, b) => b.length * b.width * b.height - a.length * b.width * a.height
+  );
+  return packBoxesWithSequence(sortedBoxes, container);
 }
 
 function getRotations(box) {

@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Cuboid, Menu, Play } from "lucide-react";
+import { Cuboid, Loader2, Menu, Play } from "lucide-react";
 
 const Scene = lazy(() => import("@/components/scene/Scene"));
 
@@ -62,11 +62,30 @@ function SceneLoading() {
 export default function HomePage() {
   const executeCsvImport = useContainerStore((s) => s.executeCsvImport);
   const canRunDeck = useContainerStore(canExecuteCsvImport);
+  const packingBusy = useContainerStore((s) => s.packingBusy);
   const reduceMotion = useReducedMotion();
   const pageSpring = reduceMotion ? { duration: 0 } : spring;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      {packingBusy ? (
+        <div
+          className="pointer-events-auto fixed inset-0 z-[200] flex items-center justify-center bg-black/55 backdrop-blur-sm"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-[#0a101c]/95 px-10 py-8 shadow-xl">
+            <Loader2 className="size-10 shrink-0 animate-spin text-primary" aria-hidden />
+            <p className="text-center font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Running packer…
+            </p>
+            <p className="max-w-[16rem] text-center text-[11px] leading-relaxed text-muted-foreground/90">
+              Optimizing layout — this may take a moment for genetic / SA runs.
+            </p>
+          </div>
+        </div>
+      ) : null}
       <motion.header
         initial={false}
         animate={{ opacity: 1, y: 0 }}
@@ -98,10 +117,14 @@ export default function HomePage() {
               variant="default"
               size="sm"
               disabled={!canRunDeck}
-              onClick={() => executeCsvImport()}
+              onClick={() => void executeCsvImport()}
               className="min-h-10 gap-2 px-4 shadow-[0_8px_24px_-12px_rgba(255,107,53,0.5)] disabled:opacity-45"
             >
-              <Play className="size-4 shrink-0 fill-current" />
+              {packingBusy ? (
+                <Loader2 className="size-4 shrink-0 animate-spin fill-none" aria-hidden />
+              ) : (
+                <Play className="size-4 shrink-0 fill-current" aria-hidden />
+              )}
               <span className="hidden sm:inline">Execute deck</span>
               <span className="sm:hidden">Run</span>
             </Button>
@@ -145,7 +168,8 @@ export default function HomePage() {
       <p className="mx-auto max-w-[1920px] px-4 pb-1 text-xs leading-relaxed text-muted-foreground lg:hidden">
         <span className="font-medium text-foreground/90">Workflow</span> — Upload CSV in{" "}
         <span className="text-foreground/80">Cargo intake</span>, set max boxes + algorithm, then{" "}
-        <span className="text-foreground/80">Run</span> or <span className="text-foreground/80">Execute deck</span>. Use
+        <span className="text-foreground/80">Run</span> or <span className="text-foreground/80">Execute deck</span>. Uses a{" "}
+        <span className="text-foreground/80">random subset</span> of N staged rows each run. Use
         the <Menu className="inline size-3.5 align-text-bottom text-foreground/70" aria-hidden /> menu for panels.
       </p>
 

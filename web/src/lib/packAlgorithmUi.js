@@ -1,6 +1,6 @@
-/** UI-only algorithm keys for future API wiring; not used by packing logic yet. */
+/** Algorithm keys wired to `packWithSelectedAlgorithm` (meta-search over the maximal-space packer). */
 export const PACK_ALGORITHM_OPTIONS = [
-  { id: "sa", label: "SA", blurb: "Simulated annealing" },
-  { id: "genetic", label: "Genetic", blurb: "Population search" },
-  { id: "greedy-hc", label: "Greedy HC", blurb: "Greedy + hill climb" },
+  { id: "sa", label: "Simulated Annealing (SA)", blurb: "Order search: swap-based neighborhood, utilization + fill score" },
+  { id: "genetic", label: "Genetic Algorithm", blurb: "Population of orderings: OX crossover + swap mutation" },
+  { id: "greedy-hc", label: "Greedy", blurb: "Volume-decreasing first fit (best-fit decreasing style)" },
 ];
