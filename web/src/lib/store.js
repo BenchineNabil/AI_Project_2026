@@ -264,7 +264,9 @@ export const useContainerStore = create((set, get) => ({
         packingPhase: "Applying results…",
         packError:
           placedCount === 0 && total > 0
-            ? "No boxes could be placed. Check CSV units (data.csv uses cm) and container size, or see server logs if Python failed."
+            ? get().selectedPackAlgorithm === "genetic"
+              ? "Genetic search finished with no placements. Try Greedy or SA, or use fewer boxes / check CSV dimensions (cm)."
+              : "No boxes could be placed. Check CSV units (data.csv uses cm) and container size, or see server logs if Python failed."
             : null,
       });
     } catch (e) {

@@ -72,12 +72,15 @@ export function createApiApp() {
         });
       }
 
-      const result = await runPythonPack({
-        boxes,
-        container,
-        algorithm: algo,
-        config: config ?? {},
-      });
+      const result = await runPythonPack(
+        {
+          boxes,
+          container,
+          algorithm: algo,
+          config: config ?? {},
+        },
+        { timeoutMs: algo === "genetic" ? 15 * 60 * 1000 : 10 * 60 * 1000 }
+      );
 
       return res.json(result);
     } catch (error) {
