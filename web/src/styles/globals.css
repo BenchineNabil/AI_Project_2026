@@ -6,7 +6,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─── Design tokens: “VoxelBerth” — deep harbor console, coral signal, tide cyan ─── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -51,6 +50,42 @@
 
 @utility font-display {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+@utility app-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.45 0.06 260 / 0.55) transparent;
+}
+
+@layer utilities {
+  .app-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .app-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .app-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: oklch(0.45 0.06 260 / 0.45);
+  }
+
+  .app-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.55 0.08 260 / 0.65);
+  }
+
+  .input-no-spinner::-webkit-outer-spin-button,
+  .input-no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .input-no-spinner[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
 
 :root {
@@ -129,14 +164,17 @@
     @apply border-border outline-ring/40;
   }
   html {
-    background-color: #070a12;
+    height: 100%;
     background-color: oklch(0.1 0.04 260);
   }
   body {
     @apply bg-background text-foreground font-sans;
-    background-color: #0a0f1a;
+    min-height: 100%;
+    min-height: 100dvh;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
     background-color: oklch(0.12 0.03 260);
-    overscroll-behavior-y: contain;
     background-image:
       radial-gradient(ellipse 120% 80% at 50% -30%, oklch(0.35 0.08 260 / 0.22), transparent 55%),
       radial-gradient(ellipse 70% 50% at 100% 100%, oklch(0.55 0.15 35 / 0.08), transparent 50%),
@@ -145,7 +183,15 @@
   }
 }
 
-/* #root layout: prefer index.html inline rules; keep noise behind app content */
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
 #root::before {
   content: "";
   pointer-events: none;

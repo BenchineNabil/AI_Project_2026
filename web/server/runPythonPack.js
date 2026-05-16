@@ -8,6 +8,8 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PYTHON_SCRIPT = path.join(__dirname, "python", "pack_service.py");
 const ENV2_NOTEBOOK = path.resolve(__dirname, "../../environment/env2.ipynb");
+const REPO_ROOT = path.resolve(__dirname, "../..");
+const AI_ALGORITHMS = path.join(REPO_ROOT, "AI_algorithms");
 
 const PYTHON_CANDIDATES =
   process.platform === "win32"
@@ -36,10 +38,16 @@ export function runPythonPack(payload, opts = {}) {
       const args =
         cmd === "py" ? ["-3", PYTHON_SCRIPT] : [PYTHON_SCRIPT];
 
+      const pathSep = process.platform === "win32" ? ";" : ":";
+      const pyPath = [AI_ALGORITHMS, process.env.PYTHONPATH]
+        .filter(Boolean)
+        .join(pathSep);
+
       const child = spawn(cmd, args, {
         env: {
           ...process.env,
           ENV2_NOTEBOOK_PATH: ENV2_NOTEBOOK,
+          PYTHONPATH: pyPath,
           PYTHONUNBUFFERED: "1",
         },
         stdio: ["pipe", "pipe", "pipe"],

@@ -1,6 +1,7 @@
 """
-Load executable code from environment/env2.ipynb into a cached namespace.
+Load executable code from environment/env2.ipynb into a namespace.
 Does not modify the notebook file — reads and exec()s code cells in order.
+Reloads from disk on every call so env2 edits apply on the next pack run.
 """
 from __future__ import annotations
 
@@ -8,8 +9,6 @@ import json
 import os
 from pathlib import Path
 from typing import Any
-
-_NAMESPACE: dict[str, Any] | None = None
 
 
 def default_notebook_path() -> Path:
@@ -21,10 +20,6 @@ def default_notebook_path() -> Path:
 
 
 def load_env2_namespace(notebook_path: Path | None = None) -> dict[str, Any]:
-    global _NAMESPACE
-    if _NAMESPACE is not None:
-        return _NAMESPACE
-
     path = (notebook_path or default_notebook_path()).resolve()
     if not path.is_file():
         raise FileNotFoundError(f"env2.ipynb not found at {path}")
@@ -47,10 +42,4 @@ def load_env2_namespace(notebook_path: Path | None = None) -> dict[str, Any]:
     if missing:
         raise RuntimeError(f"env2.ipynb missing definitions: {', '.join(missing)}")
 
-    _NAMESPACE = ns
     return ns
-
-
-def reset_namespace_cache() -> None:
-    global _NAMESPACE
-    _NAMESPACE = None

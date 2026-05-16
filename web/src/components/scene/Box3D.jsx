@@ -3,7 +3,10 @@ import * as THREE from "three";
 import { Edges } from "@react-three/drei";
 import { useContainerStore } from "@/lib/store";
 
-export function Box3D({ box, isSelected, onSelect, explodeFactor }) {
+const HIGHLIGHT = "#ff8c42";
+const HIGHLIGHT_EMISSIVE = "#ff6b35";
+
+export function Box3D({ box, isSelected, isDimmed, onSelect, explodeFactor }) {
   const meshRef = useRef(null);
   const [hovered, setHovered] = useState(false);
 
@@ -24,8 +27,10 @@ export function Box3D({ box, isSelected, onSelect, explodeFactor }) {
   const explodedY = containerCenterY + dy * explodeFactor;
   const explodedZ = containerCenterZ + dz * explodeFactor;
 
-  const color = new THREE.Color(box.color);
-  const emissiveIntensity = isSelected ? 0.3 : hovered ? 0.15 : 0;
+  const baseColor = new THREE.Color(box.color);
+  const displayColor = isSelected ? new THREE.Color(HIGHLIGHT) : baseColor;
+  const opacity = isSelected ? 1 : isDimmed ? 0.28 : hovered ? 0.92 : 0.82;
+  const emissiveIntensity = isSelected ? 0.55 : hovered ? 0.12 : isDimmed ? 0 : 0.05;
 
   return (
     <group position={[explodedX, explodedY, explodedZ]}>
@@ -49,18 +54,22 @@ export function Box3D({ box, isSelected, onSelect, explodeFactor }) {
       >
         <boxGeometry args={[box.length, box.height, box.width]} />
         <meshStandardMaterial
-          color={color}
-          transparent={hovered || isSelected}
-          opacity={isSelected ? 0.9 : hovered ? 0.94 : 0.82}
-          emissive={color}
+          color={displayColor}
+          transparent
+          opacity={opacity}
+          emissive={isSelected ? new THREE.Color(HIGHLIGHT_EMISSIVE) : displayColor}
           emissiveIntensity={emissiveIntensity}
-          roughness={0.48}
-          metalness={0.06}
+          roughness={isSelected ? 0.35 : 0.48}
+          metalness={isSelected ? 0.12 : 0.06}
           envMapIntensity={0.65}
         />
       </mesh>
 
-      <Edges threshold={15} color={isSelected ? "#fdba74" : "#334155"} lineWidth={isSelected ? 2 : 0.5}>
+      <Edges
+        threshold={15}
+        color={isSelected ? "#fff7ed" : isDimmed ? "#1e293b" : "#475569"}
+        lineWidth={isSelected ? 2.5 : 0.6}
+      >
         <boxGeometry args={[box.length, box.height, box.width]} />
       </Edges>
     </group>

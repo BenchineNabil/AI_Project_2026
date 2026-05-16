@@ -14,16 +14,36 @@ export function createApiApp() {
 
   app.get("/api", (_req, res) => {
     res.json({
-      message: "VoxelBerth API",
+      message: "3D Container Project API",
       packEngine: "env2.ipynb",
       notebookPath: ENV2_NOTEBOOK,
       notebookFound: existsSync(ENV2_NOTEBOOK),
     });
   });
 
+  app.get("/api/algorithms", async (_req, res) => {
+    try {
+      if (!existsSync(ENV2_NOTEBOOK)) {
+        return res.status(503).json({
+          error: `env2.ipynb not found at ${ENV2_NOTEBOOK}`,
+        });
+      }
+      const result = await runPythonPack(
+        { listAlgorithms: true },
+        { timeoutMs: 60_000 }
+      );
+      return res.json(result);
+    } catch (error) {
+      console.error("Algorithms API error:", error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : "Failed to list algorithms",
+      });
+    }
+  });
+
   app.post("/api/pack", async (req, res) => {
     try {
-      const { boxes, container, algorithm, config } = req.body;
+      const { boxes, container, algorithm } = req.body;
 
       if (!boxes || !Array.isArray(boxes)) {
         return res.status(400).json({
@@ -55,14 +75,9 @@ export function createApiApp() {
         }
       }
 
-      const algo =
-        algorithm === "sa" || algorithm === "genetic" || algorithm === "greedy-hc"
-          ? algorithm
-          : null;
-
-      if (!algo) {
+      if (!algorithm || typeof algorithm !== "string") {
         return res.status(400).json({
-          error: "algorithm is required: sa, genetic, or greedy-hc",
+          error: "algorithm is required (see GET /api/algorithms)",
         });
       }
 
@@ -72,14 +87,10 @@ export function createApiApp() {
         });
       }
 
+      const slowAlgos = new Set(["genetic", "aco", "pso", "csp"]);
       const result = await runPythonPack(
-        {
-          boxes,
-          container,
-          algorithm: algo,
-          config: config ?? {},
-        },
-        { timeoutMs: algo === "genetic" ? 15 * 60 * 1000 : 10 * 60 * 1000 }
+        { boxes, container, algorithm },
+        { timeoutMs: slowAlgos.has(algorithm) ? 30 * 60 * 1000 : 15 * 60 * 1000 }
       );
 
       return res.json(result);

@@ -166,12 +166,8 @@ export function StatsPanel({ layout = "card", className }) {
 
         {lastStability == null && totalBoxes > 0 ? (
           <p className="font-mono text-[10px] leading-relaxed text-amber-200/90">
-            Set{" "}
-            <span className="text-foreground/90">
-              VITE_STABILITY_MIN_OVERLAP_RATIO, VITE_STABILITY_WEIGHT_IMPORTANCE, VITE_STABILITY_SUPPORT_IMPORTANCE
-            </span>{" "}
-            in <span className="text-foreground/90">environment/.env</span> (values from env ahmed notebook) to compute
-            score and stability.
+            Run packing to see stability from <span className="text-foreground/90">env2.ipynb</span> (
+            <span className="text-foreground/90">Container.evaluate_stability</span>).
           </p>
         ) : null}
       </CardContent>

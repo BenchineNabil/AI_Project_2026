@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useContainerStore } from "@/lib/store";
 import { CONTAINER_PRESETS } from "@/lib/packing/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +13,43 @@ import {
 } from "@/components/ui/select";
 import { Ship } from "lucide-react";
 
+function dimsToDraft(container) {
+  return {
+    length: String(container.length),
+    width: String(container.width),
+    height: String(container.height),
+  };
+}
+
+function parseDim(raw) {
+  const n = parseFloat(String(raw).trim().replace(",", "."));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
 export function ContainerPanel() {
   const { container, containerPreset, setContainerPreset, updateContainer } = useContainerStore();
+  const [draft, setDraft] = useState(() => dimsToDraft(container));
+  const volumeM3 = container.length * container.width * container.height;
+
+  useEffect(() => {
+    setDraft(dimsToDraft(container));
+  }, [container.length, container.width, container.height, containerPreset]);
+
+  const commitField = (key, raw) => {
+    const n = parseDim(raw);
+    if (n == null) {
+      setDraft(dimsToDraft(container));
+      return;
+    }
+    if (Math.abs(n - container[key]) < 1e-6) return;
+    updateContainer({ [key]: n });
+  };
+
+  const dimFields = [
+    { key: "length", label: "Length (m)" },
+    { key: "width", label: "Width (m)" },
+    { key: "height", label: "Height (m)" },
+  ];
 
   return (
     <Card className="shrink-0 border-white/[0.07]">
@@ -25,10 +61,10 @@ export function ContainerPanel() {
           Vessel spec
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <div className="space-y-2">
           <Label className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Preset lane
+            Standard size
           </Label>
           <Select value={containerPreset} onValueChange={setContainerPreset}>
             <SelectTrigger className="h-10 w-full text-xs">
@@ -44,46 +80,36 @@ export function ContainerPanel() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          <div className="space-y-1.5">
-            <Label className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              L (m)
-            </Label>
-            <Input
-              type="number"
-              step="0.1"
-              min="0.1"
-              value={container.length}
-              onChange={(e) => updateContainer({ length: parseFloat(e.target.value) || 0 })}
-              className="h-9 text-xs"
-            />
+        <div className="rounded-xl border border-primary/25 bg-primary/10 px-3 py-3">
+          <p className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-primary/90">
+            Dimensions (m)
+          </p>
+          <div className="space-y-2.5">
+            {dimFields.map(({ key, label }) => (
+              <div key={key} className="space-y-1">
+                <Label className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {label}
+                </Label>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={draft[key]}
+                  onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
+                  onBlur={(e) => commitField(key, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                  className="input-no-spinner h-11 w-full min-w-0 border-white/15 bg-black/40 px-3 text-base font-bold tabular-nums text-foreground"
+                />
+              </div>
+            ))}
           </div>
-          <div className="space-y-1.5">
-            <Label className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              W (m)
-            </Label>
-            <Input
-              type="number"
-              step="0.1"
-              min="0.1"
-              value={container.width}
-              onChange={(e) => updateContainer({ width: parseFloat(e.target.value) || 0 })}
-              className="h-9 text-xs"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              H (m)
-            </Label>
-            <Input
-              type="number"
-              step="0.1"
-              min="0.1"
-              value={container.height}
-              onChange={(e) => updateContainer({ height: parseFloat(e.target.value) || 0 })}
-              className="h-9 text-xs"
-            />
-          </div>
+          <p className="mt-2.5 border-t border-white/10 pt-2 font-mono text-[11px] text-muted-foreground">
+            Volume{" "}
+            <span className="text-base font-bold tabular-nums text-foreground">{volumeM3.toFixed(2)}</span> m³
+          </p>
         </div>
       </CardContent>
     </Card>

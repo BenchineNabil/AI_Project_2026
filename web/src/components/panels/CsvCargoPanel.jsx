@@ -94,15 +94,8 @@ export function CsvCargoPanel() {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Upload a CSV with columns{" "}
-          <code className="rounded border border-white/10 bg-black/30 px-1.5 py-0.5 font-mono text-[10px] text-accent/90">
-            id,name,length,width,height,weight,fragile
-          </code>
-          . By default L/W/H are treated as <span className="text-foreground/90">centimeters</span> (converted to
-          meters for packing); set <span className="font-mono text-[10px] text-foreground/80">VITE_CSV_DIMENSION_UNIT=m</span>{" "}
-          in <span className="font-mono text-[10px]">environment/.env</span> if your file is already in meters. Use{" "}
-          <span className="text-foreground/90">true</span> or <span className="text-foreground/90">false</span> for fragile
-          (case-insensitive). Nothing is packed until you run execute.
+          CSV: <span className="font-mono text-[10px] text-foreground/90">id, name, length, width, height, weight, fragile</span>.
+          L/W/H in cm. fragile: true/false. Execute deck to pack.
         </p>
 
         <input
@@ -268,12 +261,12 @@ export function CsvCargoPanel() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="h-9 gap-1.5 text-xs"
+            className="h-10 w-full min-w-0 justify-center gap-1.5 px-3 text-xs"
             onClick={() => clearCsvImport()}
             disabled={parsedCsvBoxes.length === 0 && csvUploadStatus === "idle"}
           >
@@ -284,9 +277,9 @@ export function CsvCargoPanel() {
             variant="outline"
             size="sm"
             onClick={() => clearBoxes()}
-            className="h-9 gap-1.5 text-xs text-destructive hover:border-destructive/40 hover:text-destructive"
+            className="h-10 w-full min-w-0 justify-center gap-1.5 px-3 text-xs text-destructive hover:border-destructive/40 hover:text-destructive"
           >
-            <Trash2 className="size-3.5" />
+            <Trash2 className="size-3.5 shrink-0" />
             Purge deck
           </Button>
         </div>

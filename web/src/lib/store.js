@@ -19,6 +19,19 @@ async function yieldToBrowser() {
   await new Promise((r) => requestAnimationFrame(r));
 }
 
+const CONTAINER_REPACK_MS = 900;
+let containerRepackTimer = null;
+
+function scheduleContainerRepack(get) {
+  clearTimeout(containerRepackTimer);
+  containerRepackTimer = setTimeout(() => {
+    const s = get();
+    if (s.boxes.length > 0 && s.selectedPackAlgorithm && !s.packingBusy) {
+      void s.runPacking({ silent: true });
+    }
+  }, CONTAINER_REPACK_MS);
+}
+
 export const useContainerStore = create((set, get) => ({
   container: { ...CONTAINER_PRESETS["20ft Standard"] },
   containerPreset: "20ft Standard",
@@ -31,14 +44,14 @@ export const useContainerStore = create((set, get) => ({
       containerPreset: preset,
       container: { ...CONTAINER_PRESETS[preset] },
     });
-    void get().runPacking();
+    scheduleContainerRepack(get);
   },
   updateContainer: (dims) => {
     set((state) => ({
       container: { ...state.container, ...dims },
       containerPreset: "Custom",
     }));
-    void get().runPacking();
+    scheduleContainerRepack(get);
   },
 
   boxes: [],
@@ -84,6 +97,10 @@ export const useContainerStore = create((set, get) => ({
       lastStability: null,
       lastPackScore: null,
       packError: null,
+      placementSequence: [],
+      simulationActive: false,
+      simulationPlaying: false,
+      simulationIndex: 0,
     }),
 
   /** Staged CSV rows (not yet applied to `boxes` until execute). */
@@ -109,6 +126,44 @@ export const useContainerStore = create((set, get) => ({
   lastStability: null,
   lastPackScore: null,
   packError: null,
+  searchRunDialogOpen: false,
+  lastSearchConfig: null,
+  closeSearchRunDialog: () => set({ searchRunDialogOpen: false }),
+
+  /** Placed boxes in packing order (for step-by-step viewport animation). */
+  placementSequence: [],
+  simulationActive: false,
+  simulationPlaying: false,
+  simulationIndex: 0,
+
+  startPlacementSimulation: () => {
+    const seq = get().placementSequence;
+    if (seq.length === 0) return;
+    set({
+      simulationActive: true,
+      simulationPlaying: true,
+      simulationIndex: 0,
+      selectedBoxId: null,
+    });
+  },
+
+  stopPlacementSimulation: () => {
+    const total = get().placementSequence.length;
+    set({
+      simulationPlaying: false,
+      simulationActive: false,
+      simulationIndex: total,
+    });
+  },
+
+  skipPlacementSimulation: () => {
+    const total = get().placementSequence.length;
+    set({
+      simulationPlaying: false,
+      simulationActive: false,
+      simulationIndex: total,
+    });
+  },
 
   clearCsvImport: () =>
     set({
@@ -210,12 +265,16 @@ export const useContainerStore = create((set, get) => ({
   totalBoxes: 0,
   placedCount: 0,
 
-  runPacking: async () => {
+  runPacking: async ({ silent = false } = {}) => {
     const s = get();
     if (s.boxes.length === 0) {
       set({
         placedBoxes: [],
         unplacedBoxes: [],
+        placementSequence: [],
+        simulationActive: false,
+        simulationPlaying: false,
+        simulationIndex: 0,
         utilization: 0,
         totalBoxes: 0,
         placedCount: 0,
@@ -234,7 +293,9 @@ export const useContainerStore = create((set, get) => ({
     const algoLabel = ALGO_LABEL[s.selectedPackAlgorithm] ?? s.selectedPackAlgorithm;
     set({
       packingBusy: true,
-      packingPhase: `Loading env2.ipynb — ${algoLabel}…`,
+      searchRunDialogOpen: silent ? false : true,
+      lastSearchConfig: silent ? get().lastSearchConfig : null,
+      packingPhase: silent ? `Repacking (${algoLabel})…` : `Loading env2.ipynb — ${algoLabel}…`,
       packError: null,
     });
     await yieldToBrowser();
@@ -255,13 +316,19 @@ export const useContainerStore = create((set, get) => ({
       set({
         placedBoxes: placed,
         unplacedBoxes: unplaced,
+        placementSequence: placed,
+        simulationActive: false,
+        simulationPlaying: false,
+        simulationIndex: placed.length,
         utilization: result.utilization ?? 0,
         totalBoxes: total,
         placedCount,
         lastStability: result.stability ?? null,
         lastPackScore: result.score ?? null,
+        lastSearchConfig: result.searchConfig ?? null,
         lastRunAlgorithm: get().selectedPackAlgorithm,
         packingPhase: "Applying results…",
+        selectedBoxId: placed.length === 1 ? placed[0].id : get().selectedBoxId,
         packError:
           placedCount === 0 && total > 0
             ? get().selectedPackAlgorithm === "genetic"
@@ -278,11 +345,16 @@ export const useContainerStore = create((set, get) => ({
           placed: false,
           reason: "Packer error",
         })),
+        placementSequence: [],
+        simulationActive: false,
+        simulationPlaying: false,
+        simulationIndex: 0,
         utilization: 0,
         placedCount: 0,
         totalBoxes: get().boxes.length,
         lastStability: null,
         lastPackScore: null,
+        lastSearchConfig: null,
       });
     } finally {
       set({ packingBusy: false, packingPhase: "" });

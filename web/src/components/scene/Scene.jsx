@@ -10,9 +10,10 @@ import { useEffect, Suspense } from "react";
 import { Container3D } from "./Container3D";
 import { Box3D } from "./Box3D";
 import { FloorGrid } from "./FloorGrid";
+import { SelectionMarker } from "./SelectionMarker";
+import { PlacementSimulationTicker } from "./PlacementSimulationTicker";
 import { useContainerStore } from "@/lib/store";
 
-/** ACES tone mapping for smoother, more photographic output (presentation only). */
 function ToneMappingSetup() {
   const { gl } = useThree();
   useEffect(() => {
@@ -26,6 +27,9 @@ function ToneMappingSetup() {
 function SceneContent() {
   const {
     placedBoxes,
+    placementSequence,
+    simulationActive,
+    simulationIndex,
     container,
     selectedBoxId,
     setSelectedBoxId,
@@ -33,11 +37,17 @@ function SceneContent() {
     explodedView,
   } = useContainerStore();
 
+  const displayPlacedBoxes = simulationActive
+    ? placementSequence.slice(0, simulationIndex)
+    : placedBoxes;
+
   const explodeFactor = explodedView ? 1.5 : 1;
   const cx = container.length / 2;
   const cy = container.height / 2;
   const cz = container.width / 2;
   const shadowScale = Math.max(container.length, container.width, 8) * 1.35;
+  const selectedBox = displayPlacedBoxes.find((b) => b.id === selectedBoxId);
+  const hasSelection = Boolean(selectedBoxId);
 
   return (
     <>
@@ -50,7 +60,7 @@ function SceneContent() {
 
       <PerspectiveCamera makeDefault position={[8.5, 6.2, 8.5]} fov={48} near={0.1} far={200} />
       <OrbitControls
-        autoRotate={autoRotate}
+        autoRotate={autoRotate && !hasSelection}
         autoRotateSpeed={0.85}
         enableDamping
         dampingFactor={0.065}
@@ -60,7 +70,15 @@ function SceneContent() {
         maxDistance={42}
         maxPolarAngle={Math.PI * 0.499}
         minPolarAngle={0.12}
-        target={[cx, cy, cz]}
+        target={
+          selectedBox
+            ? [
+                selectedBox.posX + selectedBox.length / 2,
+                selectedBox.posY + selectedBox.height / 2,
+                selectedBox.posZ + selectedBox.width / 2,
+              ]
+            : [cx, cy, cz]
+        }
         makeDefault
       />
 
@@ -93,15 +111,20 @@ function SceneContent() {
 
       <Container3D length={container.length} width={container.width} height={container.height} />
 
-      {placedBoxes.map((box) => (
+      <PlacementSimulationTicker />
+
+      {displayPlacedBoxes.map((box) => (
         <Box3D
           key={box.id}
           box={box}
           isSelected={selectedBoxId === box.id}
+          isDimmed={hasSelection && selectedBoxId !== box.id}
           onSelect={() => setSelectedBoxId(selectedBoxId === box.id ? null : box.id)}
           explodeFactor={explodeFactor}
         />
       ))}
+
+      {selectedBox ? <SelectionMarker box={selectedBox} /> : null}
 
       <ContactShadows
         position={[cx, 0.018, cz]}
@@ -117,7 +140,7 @@ function SceneContent() {
 
 export default function Scene() {
   return (
-    <div className="relative isolate h-full min-h-[220px] w-full min-w-0 touch-none bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,oklch(0.32_0.1_260_/_0.4),transparent_50%),linear-gradient(180deg,#0b1220_0%,#04060c_100%)]">
+    <div className="relative isolate h-full min-h-0 w-full min-w-0 touch-none bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,oklch(0.32_0.1_260_/_0.4),transparent_50%),linear-gradient(180deg,#0b1220_0%,#04060c_100%)]">
       <Canvas
         shadows
         className="block h-full w-full"
