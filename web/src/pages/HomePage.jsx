@@ -59,14 +59,9 @@ export default function HomePage() {
       >
         <div className="mx-auto flex max-w-[2200px] flex-col gap-2.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#0c121f] shadow-lg ring-1 ring-white/10 sm:size-11">
-                <img src="/logo.svg" alt="" className="size-full p-1.5" width={44} height={44} />
-              </div>
-              <div className="min-w-0">
-                <h1 className="font-display text-base font-extrabold tracking-tight sm:text-lg">3D Container Project</h1>
-                <p className="font-mono text-[10px] text-muted-foreground">Packing · env2</p>
-              </div>
+            <div className="min-w-0">
+              <h1 className="font-display text-base font-extrabold tracking-tight sm:text-lg">ENSIA-3D project...Team leader:Benchine Nabil</h1>
+              <p className="font-mono text-[10px] text-muted-foreground">Packing · env2</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <Button
@@ -111,7 +106,7 @@ export default function HomePage() {
         </div>
       </motion.header>
 
-      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-[2200px] flex-1 flex-col overflow-hidden lg:grid lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)_minmax(0,15rem)] lg:gap-0 xl:grid-cols-[minmax(0,14.5rem)_minmax(0,1fr)_minmax(0,16.5rem)]">
+      <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-[2200px] flex-1 flex-col overflow-hidden lg:grid lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)_minmax(0,18rem)] lg:gap-0 xl:grid-cols-[minmax(0,14.5rem)_minmax(0,1fr)_minmax(0,20rem)]">
         <motion.aside
           initial={false}
           animate={{ opacity: 1, x: 0 }}
